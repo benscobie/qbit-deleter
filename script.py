@@ -26,8 +26,8 @@ parser.add_argument(
     "-s", "--sleep", action=EnvDefault, type=int, default=30, envvar='QBIT_SLEEP_DURATION',
     help="Specify how long to sleep between runs, only relevant if --runonce is FALSE (can also be specified using QBIT_SLEEP_DURATION environment variable)")
 parser.add_argument(
-    "-ro", "--runonce", action=EnvDefault, type=bool, required=False, default=False, envvar='QBIT_SLEEP_DURATION',
-    help="Specify whether to run once or forever (can also be specified using QBIT_SLEEP_DURATION environment variable)")
+    "-ro", "--runonce", action=EnvDefault, type=bool, required=False, default=False, envvar='QBIT_RUN_ONCE',
+    help="Specify whether to run once or forever (can also be specified using QBIT_RUN_ONCE environment variable)")
 parser.add_argument(
     "-seed", "--seedduration", action=EnvDefault, type=int, required=False, default=0, envvar='QBIT_SEED_DURATION',
     help="Specify how long a torrent should be seeded for in seconds before deletion (can also be specified using QBIT_SEED_DURATION environment variable)")
