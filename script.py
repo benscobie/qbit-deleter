@@ -126,8 +126,6 @@ def torrent_applicable_for_deletion(torrent):
     else:
         files = qbt_client.torrents_files(torrent.hash)
 
-        print (len(files))
-
         if len(files) > 1:
             min_seed_time = args.collectionseedduration
         else:
