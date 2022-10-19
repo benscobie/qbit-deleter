@@ -66,6 +66,8 @@ if args.deletefiles is None:
     else:
         args.deletefiles = False
 
+print(args)
+
 qbt_client = qbittorrentapi.Client(
     host=args.host,
     port=args.port,
@@ -124,10 +126,12 @@ def torrent_applicable_for_deletion(torrent):
     else:
         files = qbt_client.torrents_files(torrent.hash)
 
+        print (len(files))
+
         if len(files) > 1:
-            min_seed_time = args.singleseedduration
-        else:
             min_seed_time = args.collectionseedduration
+        else:
+            min_seed_time = args.singleseedduration
 
     if min_seed_time and torrent.seeding_time > min_seed_time:
         print(f'Enough seeding time to delete: {torrent.name}')
