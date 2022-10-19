@@ -5,4 +5,4 @@ ADD *.py /
 
 RUN pip install -r requirements.txt
 
-CMD [ "python", "./script.py" ]
+CMD [ "python", "-u", "./script.py" ]
