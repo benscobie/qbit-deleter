@@ -4,6 +4,8 @@ import time
 import argparse
 from envdefault import EnvDefault
 
+unregistered_torrent_messages = ['Unregistered torrent']
+
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "-ho", "--host", action=EnvDefault, required=True, envvar='QBIT_HOST',
@@ -19,7 +21,7 @@ parser.add_argument(
     help="Specify the qBittorrent password (can also be specified using QBIT_PASSWORD environment variable)")
 parser.add_argument(
     "-d", "--dryrun", action='store_true', default=None,
-    help="Specify whether to actually delete torrents or not (can also be specified using QBIT_DRY_RUN environment variable)")
+    help="Specify to not delete torrents (can also be specified using QBIT_DRY_RUN environment variable)")
 parser.add_argument(
     "-dl", "--disklimit", action=EnvDefault, type=int, required=False, default=0, envvar='QBIT_DISK_LIMIT_BYTES',
     help="Specify a disk limit in bytes as a delete condition (can also be specified using QBIT_DISK_LIMIT_BYTES environment variable)")
@@ -28,7 +30,7 @@ parser.add_argument(
     help="Specify how long to sleep between runs, only relevant if --runonce is FALSE (can also be specified using QBIT_SLEEP_DURATION environment variable)")
 parser.add_argument(
     "-ro", "--runonce", action='store_true', default=None,
-    help="Specify whether to run once or forever (can also be specified using QBIT_RUN_ONCE environment variable)")
+    help="Specify to run once instead of forever (can also be specified using QBIT_RUN_ONCE environment variable)")
 parser.add_argument(
     "-seed", "--seedduration", action=EnvDefault, type=int, required=False, default=0, envvar='QBIT_SEED_DURATION',
     help="Specify how long a torrent should be seeded for in seconds before deletion (can also be specified using QBIT_SEED_DURATION environment variable)")
@@ -45,7 +47,10 @@ parser.add_argument(
     help="Specify how long a multi file torrent should be seeded for in seconds before deletion (can also be specified using QBIT_COLLECTION_SEED_DURATION environment variable)")
 parser.add_argument(
     "-df", "--deletefiles", action='store_true', default=None,
-    help="Specify whether to delete files or just the torrent on deletion (can also be specified using QBIT_DELETE_FILES environment variable)")
+    help="Specify to delete files on disk as well as the torrent (can also be specified using QBIT_DELETE_FILES environment variable)")
+parser.add_argument(
+    "-du", "--deleteunregistered", action='store_true', default=None,
+    help="Specify to delete unregistered torrents (all trackers need to report unregistered) (can also be specified using QBIT_DELETE_UNREGISTERED environment variable)")
 args = parser.parse_args()
 
 if args.runonce is None:
@@ -66,7 +71,11 @@ if args.deletefiles is None:
     else:
         args.deletefiles = False
 
-print(args)
+if args.deleteunregistered is None:
+    if 'QBIT_DELETE_UNREGISTERED' in os.environ:
+        args.deleteunregistered = True
+    else:
+        args.deleteunregistered = False
 
 qbt_client = qbittorrentapi.Client(
     host=args.host,
@@ -79,7 +88,7 @@ qbt_client = qbittorrentapi.Client(
 def main():
     try:
         qbt_client.auth_log_in()
-        print("Login successful")
+        print('Login successful')
     except qbittorrentapi.LoginFailed as e:
         print(e)
 
@@ -114,6 +123,24 @@ def check_torrents():
 
                 if args.disklimit > 0 and torrent_disk_space <= args.disklimit:
                     break
+
+    if args.deleteunregistered:
+        for torrent in torrents:
+            trackers = [i for i in torrent.trackers if i.url.startswith('http')]
+
+            if len(trackers) == 0:
+                continue
+
+            can_be_deleted = True
+            for tracker in trackers:
+                if tracker.status != 4 or not any(ele in tracker.msg for ele in unregistered_torrent_messages):
+                    can_be_deleted = False
+                    break
+
+            if can_be_deleted:
+                print(f'Deleting torrent as unregistered: {torrent.name}')
+                if not args.dryrun:
+                    qbt_client.torrents_delete(delete_files=args.deletefiles, torrent_hashes=torrent.hash)
 
 
 def torrent_applicable_for_deletion(torrent):
