@@ -125,7 +125,7 @@ def check_torrents():
                     break
 
     if args.deleteunregistered:
-        for torrent in torrents:
+        for torrent in qbt_client.torrents_info():
             trackers = [i for i in torrent.trackers if i.url.startswith('http')]
 
             if len(trackers) == 0:
