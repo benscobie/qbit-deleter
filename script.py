@@ -1,37 +1,38 @@
 import qbittorrentapi
 import time
-import args
+from args import parse
 
 unregistered_torrent_messages = ['Unregistered torrent']
 
-args = args.parse()
-
-qbt_client = qbittorrentapi.Client(
-    host=args.host,
-    port=args.port,
-    username=args.username,
-    password=args.password
-)
-
 
 def main():
+    args = parse()
+
+    qbt_client = qbittorrentapi.Client(
+        host=args.host,
+        port=args.port,
+        username=args.username,
+        password=args.password
+    )
+
     try:
         qbt_client.auth_log_in()
         print('Login successful')
     except qbittorrentapi.LoginFailed as e:
         print(e)
+        exit(1)
 
     if args.runonce:
-        check_torrents()
+        check_torrents(qbt_client, args)
         exit(0)
     else:
         while True:
-            check_torrents()
+            check_torrents(qbt_client, args)
             print(f'Sleeping for {args.sleep} seconds')
             time.sleep(args.sleep)
 
 
-def check_torrents():
+def check_torrents(qbt_client, args):
     torrents = []
     torrent_disk_space = 0
 
@@ -44,7 +45,7 @@ def check_torrents():
 
     if args.disklimit == 0 or torrent_disk_space > args.disklimit:
         for torrent in torrents:
-            if torrent_applicable_for_deletion(torrent):
+            if torrent_applicable_for_deletion(torrent, qbt_client, args):
                 print(f'Deleting torrent: {torrent.name}')
                 if not args.dryrun:
                     qbt_client.torrents_delete(delete_files=args.deletefiles, torrent_hashes=torrent.hash)
@@ -72,7 +73,7 @@ def check_torrents():
                     qbt_client.torrents_delete(delete_files=args.deletefiles, torrent_hashes=torrent.hash)
 
 
-def torrent_applicable_for_deletion(torrent):
+def torrent_applicable_for_deletion(torrent, qbt_client, args):
     if args.ratio and torrent.ratio >= args.ratio:
         print(f'Enough ratio to delete: {torrent.name}')
         return True
