@@ -7,7 +7,7 @@
     ```
 3. Create annotated tag
     ```
-    git tag -a vX.Y.Z -m 'Version vX.Y.Z'
+    git tag -a vX.Y.Z -m "Version vX.Y.Z"
     ```
 4. Push commit and tag
     ```
