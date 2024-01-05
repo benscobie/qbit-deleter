@@ -33,18 +33,16 @@ def main():
 
 
 def check_torrents(qbt_client, args):
-    torrents = []
     torrent_disk_space = 0
 
     for torrent in qbt_client.torrents_info(sort='added_on'):
-        torrents.append(torrent);
         torrent_disk_space += torrent.total_size
 
     if args.disklimit:
         print(f'Disk space used: {torrent_disk_space / 1000000000} GB / {args.disklimit / 1000000000} GB')
 
     if args.disklimit == 0 or torrent_disk_space > args.disklimit:
-        for torrent in torrents:
+        for torrent in qbt_client.torrents_info(sort='added_on', tag=args.tag):
             if torrent_applicable_for_deletion(torrent, qbt_client, args):
                 print(f'Deleting torrent: {torrent.name}')
                 if not args.dryrun:

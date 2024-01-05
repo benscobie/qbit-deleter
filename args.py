@@ -49,6 +49,9 @@ def parse():
     parser.add_argument(
         "-du", "--deleteunregistered", action='store_true', default=None,
         help="Specify to delete unregistered torrents (all trackers need to report unregistered) (can also be specified using QBIT_DELETE_UNREGISTERED environment variable)")
+    parser.add_argument(
+        "-t", "--tag", action=EnvDefault, type=str, required=False, default=None, envvar='QBIT_TAG',
+        help="Specify a tag to filter torrents by (can also be specified using QBIT_TAG environment variable)")
     args = parser.parse_args()
 
     if args.runonce is None:

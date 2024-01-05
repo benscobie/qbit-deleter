@@ -1,1 +1,1 @@
-qbittorrent-api==2022.8.38
+qbittorrent-api==2023.11.57
