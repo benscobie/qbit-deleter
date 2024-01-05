@@ -1,6 +1,6 @@
 # qBittorrent Deleter
 
-![License MIT](https://img.shields.io/badge/license-MIT-blue.svg) [![](https://img.shields.io/docker/pulls/benscobie/qbit-deleter.svg)](https://hub.docker.com/r/benscobie/qbit-deleter 'DockerHub')
+![License MIT](https://img.shields.io/badge/license-MIT-blue.svg) [![](https://img.shields.io/docker/pulls/benscobie/qbit-deleter.svg)](https://hub.docker.com/r/benscobie/qbit-deleter "DockerHub")
 
 ## Overview
 
@@ -45,6 +45,7 @@ See the [Arguments section](#arguments) for a full list of available environment
 ### Command line
 
 Clone the repository and run:
+
 ```commandline
 pip install -r requirements.txt
 ./script.py --host example.com --port 54000 --username admin --password password
@@ -55,12 +56,12 @@ pip install -r requirements.txt
 It's important to note that currently when a disk limit is specified, torrents meeting any ratio or seeding duration will only be deleted once the disk limit has been breached, in which case the oldest torrent meeting the condition(s) is deleted first.
 
 | Description                                                                                                                | CLI                             | Environment Variable          | Default      |
-|:---------------------------------------------------------------------------------------------------------------------------|:--------------------------------|-------------------------------|:-------------|
+| :------------------------------------------------------------------------------------------------------------------------- | :------------------------------ | ----------------------------- | :----------- |
 | Set the host for qBittorrent.                                                                                              | -ho --host                      | QBIT_HOST                     |              |
 | Set the port for qBittorrent.                                                                                              | -po --port                      | QBIT_PORT                     | 8080         |
 | Set the username for qBittorrent.                                                                                          | -u --username                   | QBIT_USERNAME                 |              |
 | Set the password for qBittorrent.                                                                                          | -p --password                   | QBIT_PASSWORD                 |              |
-| Enable dry run mode. Does not delete torrents, just prints what it will do.                                                | -d --dryrun                     | QBIT_DRY_RUN                  | False        | 
+| Enable dry run mode. Does not delete torrents, just prints what it will do.                                                | -d --dryrun                     | QBIT_DRY_RUN                  | False        |
 | Run once instead of forever.                                                                                               | -ro --runonce                   | QBIT_RUN_ONCE                 | False        |
 | How long to sleep between runs, only relevant if not running once.                                                         | -s --sleep                      | QBIT_SLEEP_DURATION           | 30           |
 | Disk limit in bytes as a delete condition. Disk usage is calculated by adding up the size of each torrent.                 | -dl --disklimit                 | QBIT_DISK_LIMIT_BYTES         | 0 (no limit) |
@@ -70,6 +71,7 @@ It's important to note that currently when a disk limit is specified, torrents m
 | How long a multi file torrent should be seeded for in seconds before deletion.                                             | -cseed --collectionseedduration | QBIT_COLLECTION_SEED_DURATION | 0 (no limit) |
 | Enable deletion of files on disk as well as the torrent.                                                                   | -df --deletefiles               | QBIT_DELETE_FILES             | False        |
 | Enable deletion of unregistered torrents, all trackers need to report unregistered.                                        | -du --deleteunregistered        | QBIT_DELETE_UNREGISTERED      | False        |
+| Tag that a torrent must have in order to be considered.                                                                   | -t --tag                        | QBIT_TAG                      |              |
 
 Running the following will also print the available arguments:
 
