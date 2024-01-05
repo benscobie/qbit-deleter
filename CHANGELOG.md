@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2024-01-05
+
+Add option to filter torrents by tag
+
 ## [1.0.0] - 2022-10-30
 
 Initial release
