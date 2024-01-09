@@ -21,8 +21,11 @@ def parse():
         "-d", "--dryrun", action='store_true', default=None,
         help="Specify to not delete torrents (can also be specified using QBIT_DRY_RUN environment variable)")
     parser.add_argument(
-        "-dl", "--disklimit", action=EnvDefault, type=int, required=False, default=0, envvar='QBIT_DISK_LIMIT_BYTES',
-        help="Specify a disk limit in bytes as a delete condition (can also be specified using QBIT_DISK_LIMIT_BYTES environment variable)")
+        "-fs", "--freespace", action=EnvDefault, type=int, required=False, default=0, envvar='QBIT_FREE_SPACE_BYTES',
+        help="Specify a minimum amount of free disk space required (can also be specified using QBIT_FREE_SPACE_BYTES environment variable)")
+    parser.add_argument(
+        "-fsp", "--freespacepath", action=EnvDefault, type=str, required=False, default='/', envvar='QBIT_FREE_SPACE_PATH',
+        help="Specify the path to check for free space, use with the freespace argument (can also be specified using QBIT_FREE_SPACE_PATH environment variable)")
     parser.add_argument(
         "-s", "--sleep", action=EnvDefault, type=int, default=30, envvar='QBIT_SLEEP_DURATION',
         help="Specify how long to sleep between runs, only relevant if --runonce is FALSE (can also be specified using QBIT_SLEEP_DURATION environment variable)")
@@ -54,27 +57,29 @@ def parse():
         help="Specify a tag to filter torrents by (can also be specified using QBIT_TAG environment variable)")
     args = parser.parse_args()
 
+    truthys = ["true", "1", "yes", "on"]
+
     if args.runonce is None:
         if 'QBIT_RUN_ONCE' in os.environ:
-            args.runonce = True
+            args.runonce = os.environ['QBIT_RUN_ONCE'].lower() in truthys
         else:
             args.runonce = False
 
     if args.dryrun is None:
         if 'QBIT_DRY_RUN' in os.environ:
-            args.dryrun = True
+            args.dryrun = os.environ['QBIT_DRY_RUN'].lower() in truthys
         else:
             args.dryrun = False
 
     if args.deletefiles is None:
         if 'QBIT_DELETE_FILES' in os.environ:
-            args.deletefiles = True
+            args.deletefiles = os.environ['QBIT_DELETE_FILES'].lower() in truthys
         else:
             args.deletefiles = False
 
     if args.deleteunregistered is None:
         if 'QBIT_DELETE_UNREGISTERED' in os.environ:
-            args.deleteunregistered = True
+            args.deleteunregistered = os.environ['QBIT_DELETE_UNREGISTERED'].lower() in truthys
         else:
             args.deleteunregistered = False
 

@@ -3,12 +3,13 @@ import unittest
 from script import check_torrents
 from script import torrent_applicable_for_deletion
 
-
 class TestQbitDeleter(unittest.TestCase):
 
+    @patch("script.shutil.disk_usage")
     @patch('script.torrent_applicable_for_deletion')
-    def test_disk_limit_reached_deletes_appropriate_torrents(self, mock_torrent_applicable_for_deletion):
+    def test_disk_limit_reached_deletes_appropriate_torrents(self, mock_torrent_applicable_for_deletion, mock_shutil_disk_usage):
         mock_torrent_applicable_for_deletion.return_value = True
+        mock_shutil_disk_usage.return_value.free = 500
 
         torrent1 = MagicMock(name='Torrent 1', total_size=1000, hash='hash1')
         torrent2 = MagicMock(name='Torrent 2', total_size=1000, hash='hash2')
@@ -17,7 +18,8 @@ class TestQbitDeleter(unittest.TestCase):
         qbt_client_mock = MagicMock()
         qbt_client_mock.torrents_info = MagicMock(return_value=[torrent1, torrent2, torrent3])
         args = Mock()
-        args.disklimit = 500
+        args.freespace = 2000
+        args.freespacepath = '/'
         args.dryrun = False
         args.deletefiles = True
         args.deleteunregistered = False
