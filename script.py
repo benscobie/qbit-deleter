@@ -1,3 +1,4 @@
+import shutil
 import qbittorrentapi
 import time
 from args import parse
@@ -33,23 +34,17 @@ def main():
 
 
 def check_torrents(qbt_client, args):
-    torrent_disk_space = 0
+    free_disk_space = shutil.disk_usage(args.freespacepath).free
 
-    for torrent in qbt_client.torrents_info(sort='added_on'):
-        torrent_disk_space += torrent.total_size
-
-    if args.disklimit:
-        print(f'Disk space used: {torrent_disk_space / 1000000000} GB / {args.disklimit / 1000000000} GB')
-
-    if args.disklimit == 0 or torrent_disk_space > args.disklimit:
+    if args.freespace == 0 or free_disk_space < args.freespace:
         for torrent in qbt_client.torrents_info(sort='added_on', tag=args.tag):
             if torrent_applicable_for_deletion(torrent, qbt_client, args):
                 print(f'Deleting torrent: {torrent.name}')
                 if not args.dryrun:
                     qbt_client.torrents_delete(delete_files=args.deletefiles, torrent_hashes=torrent.hash)
-                torrent_disk_space -= torrent.total_size
+                free_disk_space += torrent.total_size
 
-                if args.disklimit > 0 and torrent_disk_space <= args.disklimit:
+                if args.freespace > 0 and free_disk_space >= args.freespace:
                     break
 
     if args.deleteunregistered:
