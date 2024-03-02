@@ -3,22 +3,19 @@ import qbittorrentapi
 import time
 from args import parse
 
-unregistered_torrent_messages = ['Unregistered torrent']
+unregistered_torrent_messages = ["Unregistered torrent"]
 
 
 def main():
     args = parse()
 
     qbt_client = qbittorrentapi.Client(
-        host=args.host,
-        port=args.port,
-        username=args.username,
-        password=args.password
+        host=args.host, port=args.port, username=args.username, password=args.password
     )
 
     try:
         qbt_client.auth_log_in()
-        print('Login successful')
+        print("Login successful")
     except qbittorrentapi.LoginFailed as e:
         print(e)
         exit(1)
@@ -29,7 +26,7 @@ def main():
     else:
         while True:
             check_torrents(qbt_client, args)
-            print(f'Sleeping for {args.sleep} seconds')
+            print(f"Sleeping for {args.sleep} seconds")
             time.sleep(args.sleep)
 
 
@@ -37,11 +34,13 @@ def check_torrents(qbt_client, args):
     free_disk_space = shutil.disk_usage(args.freespacepath).free
 
     if args.freespace == 0 or free_disk_space < args.freespace:
-        for torrent in qbt_client.torrents_info(sort='added_on', tag=args.tag):
+        for torrent in qbt_client.torrents_info(sort="added_on", tag=args.tag):
             if torrent_applicable_for_deletion(torrent, qbt_client, args):
-                print(f'Deleting torrent: {torrent.name}')
+                print(f"Deleting torrent: {torrent.name}")
                 if not args.dryrun:
-                    qbt_client.torrents_delete(delete_files=args.deletefiles, torrent_hashes=torrent.hash)
+                    qbt_client.torrents_delete(
+                        delete_files=args.deletefiles, torrent_hashes=torrent.hash
+                    )
                 free_disk_space += torrent.total_size
 
                 if args.freespace > 0 and free_disk_space >= args.freespace:
@@ -49,26 +48,48 @@ def check_torrents(qbt_client, args):
 
     if args.deleteunregistered:
         for torrent in qbt_client.torrents_info():
-            trackers = [i for i in torrent.trackers if i.url.startswith('http')]
+            trackers = [i for i in torrent.trackers if i.url.startswith("http")]
 
             if len(trackers) == 0:
                 continue
 
             can_be_deleted = True
             for tracker in trackers:
-                if tracker.status != 4 or not any(ele in tracker.msg for ele in unregistered_torrent_messages):
+                if (
+                    tracker.status != qbittorrentapi.TrackerStatus.NOT_WORKING
+                    or not any(
+                        ele in tracker.msg for ele in unregistered_torrent_messages
+                    )
+                ):
                     can_be_deleted = False
                     break
 
             if can_be_deleted:
-                print(f'Deleting torrent as unregistered: {torrent.name}')
+                print(f"Deleting torrent as unregistered: {torrent.name}")
                 if not args.dryrun:
-                    qbt_client.torrents_delete(delete_files=args.deletefiles, torrent_hashes=torrent.hash)
+                    qbt_client.torrents_delete(
+                        delete_files=args.deletefiles, torrent_hashes=torrent.hash
+                    )
 
 
 def torrent_applicable_for_deletion(torrent, qbt_client, args):
+    if args.restrict_to_working:
+        trackers = [i for i in torrent.trackers if i.url.startswith("http")]
+
+        tracker_working = False
+        for tracker in trackers:
+            if tracker.status == qbittorrentapi.TrackerStatus.WORKING or (
+                tracker.status == qbittorrentapi.TrackerStatus.NOT_WORKING
+                and any(ele in tracker.msg for ele in unregistered_torrent_messages)
+            ):
+                tracker_working = True
+                break
+
+        if len(trackers) > 0 and not tracker_working:
+            return False
+
     if args.ratio and torrent.ratio >= args.ratio:
-        print(f'Enough ratio to delete: {torrent.name}')
+        print(f"Enough ratio to delete: {torrent.name}")
         return True
 
     if args.seedduration:
@@ -82,7 +103,7 @@ def torrent_applicable_for_deletion(torrent, qbt_client, args):
             min_seed_time = args.singleseedduration
 
     if min_seed_time and torrent.seeding_time > min_seed_time:
-        print(f'Enough seeding time to delete: {torrent.name}')
+        print(f"Enough seeding time to delete: {torrent.name}")
         return True
 
     return False
