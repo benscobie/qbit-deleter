@@ -144,6 +144,16 @@ def parse():
         help="Specify a tag to filter torrents by (can also be specified using QBIT_TAG environment variable)",
     )
     parser.add_argument(
+        "-et",
+        "--excludetag",
+        action=EnvDefault,
+        type=str,
+        required=False,
+        default=None,
+        envvar="QBIT_EXCLUDE_TAG",
+        help="Exclude torrents that contain the specified tag (can also be specified using QBIT_EXCLUDE_TAG environment variable)",
+    )
+    parser.add_argument(
         "-w",
         "--working",
         action="store_true",

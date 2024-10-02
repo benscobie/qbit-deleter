@@ -40,6 +40,8 @@ services:
       - QBIT_DELETE_FILES=1
       - QBIT_DELETE_UNREGISTERED=1
       - QBIT_DRY_RUN=1
+      - QBIT_TAG=media
+      - QBIT_EXCLUDE_TAG=unseen
 ```
 
 See the [Arguments section](#arguments) for a full list of available environment variables.
@@ -75,6 +77,7 @@ It's important to note that currently when the free space argument is specified,
 | Enable deletion of files on disk as well as the torrent.                                                                   | -df --deletefiles               | QBIT_DELETE_FILES             | False        |
 | Enable deletion of unregistered torrents, all trackers need to report unregistered.                                        | -du --deleteunregistered        | QBIT_DELETE_UNREGISTERED      | False        |
 | Tag that a torrent must have in order to be considered.                                                                    | -t --tag                        | QBIT_TAG                      |              |
+| Tag that a torrent must not have in order to be considered.                                                                | -et --exclude-tag               | QBIT_EXCLUDE_TAG              |              |
 
 Running the following will also print the available arguments:
 
