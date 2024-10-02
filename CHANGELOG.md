@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [1.2.0] - 2024-10-02
+
 - Update qbittorrent-api to 2024.9.67
 - Add option to exclude torrents that contain a particular tag.
 - Remove disk limit argument and replace it with a free disk argument.
