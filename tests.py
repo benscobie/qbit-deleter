@@ -40,6 +40,21 @@ class TestQbitDeleter(unittest.TestCase):
             ]
         )
 
+    def test_excluded_tag_is_not_applicable_for_deletion(
+        self,
+    ):
+        torrent = MagicMock(
+            name="Torrent", ratio=0.5, hash="hash", seeding_time=9999, tags=["excluded"]
+        )
+        qbt_client_mock = MagicMock()
+
+        args = Mock()
+        args.excludetag = "excluded"
+
+        result = torrent_applicable_for_deletion(torrent, qbt_client_mock, args)
+
+        self.assertEqual(result, False)
+
     def test_enough_ratio_tracker_working_is_applicable_for_deletion(self):
         torrent = MagicMock(
             name="Torrent",

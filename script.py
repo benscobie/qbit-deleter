@@ -2,6 +2,7 @@ import shutil
 import qbittorrentapi
 import time
 from args import parse
+from util import is_tag_in_torrent
 
 unregistered_torrent_messages = ["Unregistered torrent"]
 
@@ -10,15 +11,23 @@ def main():
     args = parse()
 
     qbt_client = qbittorrentapi.Client(
-        host=args.host, port=args.port, username=args.username, password=args.password
+        host=args.host,
+        port=args.port,
+        username=args.username,
+        password=args.password,
+        VERIFY_WEBUI_CERTIFICATE=False,
+        REQUESTS_ARGS={"timeout": (45, 60)},
     )
 
     try:
         qbt_client.auth_log_in()
         print("Login successful")
     except qbittorrentapi.LoginFailed as e:
-        print(e)
+        print("Failed to login. Invalid username/password.")
         exit(1)
+    except Exception as e:
+        print(e)
+        exit(2)
 
     if args.runonce:
         check_torrents(qbt_client, args)
@@ -34,7 +43,9 @@ def check_torrents(qbt_client, args):
     free_disk_space = shutil.disk_usage(args.freespacepath).free
 
     if args.freespace == 0 or free_disk_space < args.freespace:
-        for torrent in qbt_client.torrents_info(sort="added_on", tag=args.tag):
+        for torrent in qbt_client.torrents_info(
+            sort="num_complete", reverse=True, tag=args.tag
+        ):
             if torrent_applicable_for_deletion(torrent, qbt_client, args):
                 print(f"Deleting torrent: {torrent.name}")
                 if not args.dryrun:
@@ -73,6 +84,9 @@ def check_torrents(qbt_client, args):
 
 
 def torrent_applicable_for_deletion(torrent, qbt_client, args):
+    if args.excludetag and is_tag_in_torrent(args.excludetag, torrent.tags):
+        return False
+
     if args.restrict_to_working:
         trackers = [i for i in torrent.trackers if i.url.startswith("http")]
 

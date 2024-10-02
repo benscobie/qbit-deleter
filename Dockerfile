@@ -1,11 +1,16 @@
-FROM python:3-slim
+FROM python:3.12-slim
 
 ENV PYTHONUNBUFFERED=1
 
 COPY requirements.txt /
 
-RUN pip install --no-cache-dir -r /requirements.txt
+RUN apt-get update \
+ && apt-get upgrade \
+ && apt-get install -y tini \
+ && pip install --no-cache-dir -r /requirements.txt \
+ && rm -rf /requirements.txt /var/cache/apt/* /var/lib/apt/lists/*
 
 COPY *.py /
 
-CMD [ "python", "-u", "./script.py" ]
+ENTRYPOINT [ "/usr/bin/tini", "--" ]
+CMD [ "python", "-u", "script.py" ]
